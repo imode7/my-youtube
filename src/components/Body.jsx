@@ -1,5 +1,6 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 
 export default function Body(props) {
   const {
@@ -7,7 +8,7 @@ export default function Body(props) {
     error,
     data: youtubePopular,
   } = useQuery(["youtubePopular"], async () =>
-    fetch(`videos/popular.json`).then((res) => res.json())
+    fetch(`videos/search.json`).then((res) => res.json())
   );
 
   if (isLoading) return <p>Loading...</p>;
@@ -16,18 +17,22 @@ export default function Body(props) {
 
   return (
     <div className="flex p-5 flex-wrap justify-center">
-      {youtubePopular.items.map((youtubeList) => {
+      {youtubePopular.items.map((youtubeList, idx) => {
         return (
           <div
-            key={youtubeList.id}
-            className="border-solid border-2 border-indigo-600 max-w-1/4 min-w-1/4 m-2.5 flex justify-center flex-col"
+            key={idx}
+            className="border-solid border-2 border-indigo-600 max-w-1/4 min-w-1/4 m-2.5 flex flex-col"
           >
-            <img src={youtubeList.snippet.thumbnails.default.url} alt="" />
-            <p>{textSplit(youtubeList.snippet.title)}</p>
-            <p className="text-xs text-gray-400">
-              {youtubeList.snippet.channelTitle}
-              {`조회수`}
-            </p>
+            <Link to={`details`} className="flex flex-col">
+              <img src={youtubeList.snippet.thumbnails.default.url} alt="" />
+              <p>{textSplit(youtubeList.snippet.title)}</p>
+              <p className="text-xs text-gray-400">
+                {youtubeList.snippet.channelTitle}
+              </p>
+              <p className="text-xs text-gray-400">
+                {dayChanger(youtubeList.snippet.publishedAt)}
+              </p>
+            </Link>
           </div>
         );
       })}
@@ -41,4 +46,12 @@ function textSplit(text) {
   } else {
     return text;
   }
+}
+
+function dayChanger(days) {
+  const formatter = new Intl.RelativeTimeFormat("en");
+  const daysPassed = Math.ceil(
+    (new Date(days) - new Date()) / (1000 * 60 * 60 * 24)
+  );
+  return formatter.format(daysPassed, "day");
 }
